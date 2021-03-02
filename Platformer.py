@@ -61,7 +61,7 @@ coin_img = pygame.image.load('img/coin.png')
 # load in slime image set
 slime_images_right = []
 slime_images_left = []
-for num in range(0, 4):
+for num in range(4):
     img_right = pygame.image.load(f'img/enemies/slime/slime-move-{num}.png')
     img_right = pygame.transform.scale(img_right, (tile_size, tile_size))
     img_left = pygame.transform.flip(img_right, True, False)
@@ -73,7 +73,7 @@ def draw_text(text, font, text_col, x, y):
     screen.blit(img, (x, y))
 
 def draw_grid():
-    for line in range(0, (screen_width // tile_size)):
+    for line in range(screen_width // tile_size):
         pygame.draw.line(screen, (255, 255, 255), (0, line * tile_size), (screen_width, line * tile_size))
         pygame.draw.line(screen, (255, 255, 255), (line * tile_size, 0), (line * tile_size, screen_height))
 
@@ -87,9 +87,7 @@ def reset_level(level):
     if path.exists(f'level{level}_data'):
         pickle_in = open(f'level{level}_data', 'rb')
         world_data = pickle.load(pickle_in)
-    world = World(world_data)
-
-    return world
+    return World(world_data)
 
 class Button():
     def __init__(self, x, y, image):
@@ -107,10 +105,13 @@ class Button():
         pos = pygame.mouse.get_pos()
 
         # check mouseover and clicked conditions
-        if self.rect.collidepoint(pos):
-            if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
-                action = True
-                self.clicked = True
+        if (
+            self.rect.collidepoint(pos)
+            and pygame.mouse.get_pressed()[0] == 1
+            and self.clicked == False
+        ):
+            action = True
+            self.clicked = True
 
         if pygame.mouse.get_pressed()[0] == 0:
             self.clicked = False
@@ -125,44 +126,40 @@ class World():
         # create list of tile images and their coordinates as tuples
         self.tile_list = []
 
-        row_count = 0
-        for row in data:
-          col_count = 0
-          for tile in row:
-              if tile == 1:
-                  img = pygame.transform.scale(dirt_img, (tile_size, tile_size))    # scale dirt image to tile_size
-                  img_rect = img.get_rect()             # create rectangle around image
-                  img_rect.x = col_count * tile_size    # define x coord of rectangle
-                  img_rect.y = row_count * tile_size    # and y
-                  tile = (img, img_rect)                # create tuple of image
-                  self.tile_list.append(tile)           # will append a list of tuples with the image and coordinates
-              if tile == 2:
-                  img = pygame.transform.scale(grass_img, (tile_size, tile_size))
-                  img_rect = img.get_rect()
-                  img_rect.x = col_count * tile_size
-                  img_rect.y = row_count * tile_size
-                  tile = (img, img_rect)
-                  self.tile_list.append(tile)
-              if tile == 3:
-                  enemy_1 = Enemy_1(col_count * tile_size, row_count * tile_size)
-                  enemy_1_group.add(enemy_1)
-              if tile == 4:
-                  platform = Platform(col_count * tile_size, row_count * tile_size, 1, 0)
-                  platform_group.add(platform)
-              if tile == 5:
-                  platform = Platform(col_count * tile_size, row_count * tile_size, 0, 1)
-                  platform_group.add(platform)
-              if tile == 6:
-                  lava = Lava(col_count * tile_size, row_count * tile_size + (tile_size // 2))
-                  lava_group.add(lava)
-              if tile == 7:
-                  coin = Coin(col_count * tile_size + (tile_size // 2), row_count * tile_size + (tile_size // 2))
-                  coin_group.add(coin)
-              if tile == 8:
-                  exit = Exit(col_count * tile_size, row_count * tile_size - (tile_size // 2))
-                  exit_group.add(exit)
-              col_count += 1
-          row_count += 1
+        for row_count, row in enumerate(data):
+            for col_count, tile in enumerate(row):
+                if tile == 1:
+                    img = pygame.transform.scale(dirt_img, (tile_size, tile_size))    # scale dirt image to tile_size
+                    img_rect = img.get_rect()             # create rectangle around image
+                    img_rect.x = col_count * tile_size    # define x coord of rectangle
+                    img_rect.y = row_count * tile_size    # and y
+                    tile = (img, img_rect)                # create tuple of image
+                    self.tile_list.append(tile)           # will append a list of tuples with the image and coordinates
+                if tile == 2:
+                    img = pygame.transform.scale(grass_img, (tile_size, tile_size))
+                    img_rect = img.get_rect()
+                    img_rect.x = col_count * tile_size
+                    img_rect.y = row_count * tile_size
+                    tile = (img, img_rect)
+                    self.tile_list.append(tile)
+                if tile == 3:
+                    enemy_1 = Enemy_1(col_count * tile_size, row_count * tile_size)
+                    enemy_1_group.add(enemy_1)
+                if tile == 4:
+                    platform = Platform(col_count * tile_size, row_count * tile_size, 1, 0)
+                    platform_group.add(platform)
+                if tile == 5:
+                    platform = Platform(col_count * tile_size, row_count * tile_size, 0, 1)
+                    platform_group.add(platform)
+                if tile == 6:
+                    lava = Lava(col_count * tile_size, row_count * tile_size + (tile_size // 2))
+                    lava_group.add(lava)
+                if tile == 7:
+                    coin = Coin(col_count * tile_size + (tile_size // 2), row_count * tile_size + (tile_size // 2))
+                    coin_group.add(coin)
+                if tile == 8:
+                    exit = Exit(col_count * tile_size, row_count * tile_size - (tile_size // 2))
+                    exit_group.add(exit)
 
     def draw(self):
       for tile in self.tile_list:
@@ -276,7 +273,7 @@ class Player():
         self.images_left = []
         self.index_x = 0
         self.counter_x = 0
-        for num in range(0, 6):
+        for num in range(6):
             img_right = pygame.image.load(f'img/player/adventurer-run-0{num}.png')
             img_right = pygame.transform.scale(img_right, (68, 50))
             img_left = pygame.transform.flip(img_right, True, False)
@@ -288,7 +285,7 @@ class Player():
         self.images_idle_left = []
         self.index_idle = 0
         self.counter_idle = 0
-        for num in range(0, 4):
+        for num in range(4):
             img_right = pygame.image.load(f'img/player/adventurer-idle-0{num}.png')
             img_right = pygame.transform.scale(img_right, (68,50))
             img_left = pygame.transform.flip(img_right, True, False)
@@ -300,7 +297,7 @@ class Player():
         self.images_jump_left = []
         self.index_jump = 0
         self.counter_jump = 0
-        for num in range(0, 4):
+        for num in range(4):
             img_right = pygame.image.load(f'img/player/adventurer-jump-0{num}.png')
             img_right = pygame.transform.scale(img_right, (68,50))
             img_left = pygame.transform.flip(img_right, True, False)
@@ -312,7 +309,7 @@ class Player():
         self.images_fall_left = []
         self.index_fall = 0
         self.counter_fall = 0
-        for num in range(0, 2):
+        for num in range(2):
             img_right = pygame.image.load(f'img/player/adventurer-fall-0{num}.png')
             img_right = pygame.transform.scale(img_right, (68,50))
             img_left = pygame.transform.flip(img_right, True, False)
@@ -324,7 +321,7 @@ class Player():
         self.images_attack_left = []
         self.attack_index = 0
         self.attack_counter = 0
-        for num in range(0, 6):
+        for num in range(6):
             img_right = pygame.image.load(f'img/player/adventurer-attack2-0{num}.png')
             img_right = pygame.transform.scale(img_right, (68,50))
             img_left = pygame.transform.flip(img_right, True, False)
